@@ -1,2 +1,2 @@
 # books-shop-api
-Online shoe store on Django REST Framework: managing products, carts, orders, reviews and payment processing.
+This project is an online shoe store built using Django REST Framework (DRF). It features a robust backend that allows for comprehensive management of products, categories, users, carts, orders, and reviews. Users can browse a variety of shoes, add them to their carts, and complete purchases with multiple payment methods. Additionally, the application supports user reviews for products, enhancing the shopping experience. Caching popular items and asynchronous tasks for order notifications are also implemented to improve performance and user engagement.
