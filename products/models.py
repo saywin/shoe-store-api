@@ -4,7 +4,9 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Категорія")
     parent = models.ForeignKey(
-        "self", on_delete=models.CASCADE, verbose_name="Підкатегорія"
+        "self", on_delete=models.CASCADE,
+        related_name="subcategories",
+        verbose_name="Підкатегорія",
     )
     slug = models.SlugField(
         max_length=255, blank=True, unique=True, verbose_name="Url"
@@ -47,7 +49,6 @@ class Size(models.Model):
 
 
 class Product(models.Model):
-
     SEASON_CHOICES = {
         "AUTUMN": "Осінь",
         "SUMMER": "Літо",
@@ -70,7 +71,6 @@ class Product(models.Model):
         verbose_name="Категорія",
     )
     color = models.CharField(max_length=50, verbose_name="Колір")
-    image = models.ImageField(upload_to="shop/product/", verbose_name="Фото")
     article = models.CharField(max_length=30, verbose_name="Артикул")
     material = models.CharField(max_length=100, verbose_name="Матеріал")
     season = models.CharField(
@@ -104,8 +104,18 @@ class Product(models.Model):
 
 
 class Stock(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Продукт")
-    size = models.ForeignKey(Size, on_delete=models.CASCADE, verbose_name="Розмір")
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="Продукт",
+        related_name="size"
+    )
+    size = models.ForeignKey(
+        Size,
+        on_delete=models.CASCADE,
+        related_name="products",
+        verbose_name="Розмір"
+    )
     quantity = models.IntegerField(verbose_name="Кількість")
 
     class Meta:
@@ -114,3 +124,18 @@ class Stock(models.Model):
 
     def __str__(self):
         return self.quantity
+
+
+class Gallery(models.Model):
+    image = models.ImageField(upload_to="products/", verbose_name="Зображення")
+    products = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name="Продукт"
+    )
+
+    class Meta:
+        db_table = "gallery"
+        verbose_name = "Зображення"
+        verbose_name_plural = "Галерея товарів"
