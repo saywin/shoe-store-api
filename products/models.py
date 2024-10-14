@@ -108,7 +108,7 @@ class Stock(models.Model):
         Product,
         on_delete=models.CASCADE,
         verbose_name="Продукт",
-        related_name="size"
+        related_name="stocks"
     )
     size = models.ForeignKey(
         Size,
@@ -120,7 +120,9 @@ class Stock(models.Model):
 
     class Meta:
         db_table = "stock"
-        constraints = models.UniqueConstraint(fields=["products", "size"])
+        constraints = [models.UniqueConstraint(
+            fields=["product", "size"], name="unique_product_size"
+        )]
 
     def __str__(self):
         return self.quantity
