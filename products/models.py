@@ -1,10 +1,12 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Категорія")
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE,
+        blank=True, null=True,
         related_name="subcategories",
         verbose_name="Підкатегорія",
     )
@@ -118,6 +120,13 @@ class Stock(models.Model):
     )
     quantity = models.IntegerField(verbose_name="Кількість")
 
+    def clean(self):
+        total_quantity_in_stock = sum(stock.quantity for stock in self.product.stocks.exclude(pk=self.pk))
+
+        if total_quantity_in_stock + self.quantity > self.product.count:
+            raise ValidationError(
+                "Сумарна кількість товарів у складі не може перевищувати загальну кількість продукту.")
+
     class Meta:
         db_table = "stock"
         constraints = [models.UniqueConstraint(
@@ -125,7 +134,7 @@ class Stock(models.Model):
         )]
 
     def __str__(self):
-        return self.quantity
+        return f"{self.product.name} - {self.size.size}, quantity: {self.quantity}"
 
 
 class Gallery(models.Model):

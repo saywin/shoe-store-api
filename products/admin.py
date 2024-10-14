@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from products.models import Category, Product, Gallery, Stock
+from products.models import Category, Product, Gallery, Stock, Size
 
 
 class GalleryInline(admin.TabularInline):
@@ -30,3 +30,13 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ["price", "name"]
     list_display_links = ["pk", "name"]
     inlines = (GalleryInline, StockInline)
+
+
+@admin.register(Size)
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ["size"]
+
+
+@admin.register(Stock)
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ["quantity"]
