@@ -115,7 +115,7 @@ class Stock(models.Model):
     size = models.ForeignKey(
         Size,
         on_delete=models.CASCADE,
-        related_name="products",
+        related_name="stocks",
         verbose_name="Розмір"
     )
     quantity = models.IntegerField(verbose_name="Кількість")
