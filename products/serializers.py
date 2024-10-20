@@ -15,33 +15,26 @@ class CategorySerializer(serializers.ModelSerializer):
 class SizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Size
-        fields = ["id"]
+        fields = ['id', 'size']
 
 
 class StockSerializer(serializers.ModelSerializer):
-    size = SizeSerializer(many=True)
+    size = serializers.PrimaryKeyRelatedField(queryset=Size.objects.all())
 
     class Meta:
         model = Stock
-        fields = ["size", "quantity"]
-
-    def create(self, validated_data):
-        size_data = validated_data.pop('size')
-        size_instance = Size.objects.get(size=size_data)
-        stock = Stock.objects.create(size=size_instance, **validated_data)
-        return stock
+        fields = ['size', 'quantity']
 
 
 class GallerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Gallery
-        fields = ["image"]
+        fields = ['image']
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    stocks = StockSerializer(many=True, write_only=True)
-    images = GallerySerializer(many=True, write_only=True)
-    print(stocks)
+    stocks = StockSerializer(many=True)
+    images = GallerySerializer(many=True)
 
     class Meta:
         model = Product
@@ -65,7 +58,7 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        sizes_data = validated_data.pop('stocks')
+        stocks_data = validated_data.pop('stocks')
         images_data = validated_data.pop('images')
 
         logger.info("Validated Data: %s", validated_data)
@@ -74,10 +67,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
         product = Product.objects.create(**validated_data)
 
-        for size_data in sizes_data:
-            Stock.objects.create(product=product, **size_data)
+        for stock_data in stocks_data:
+            Stock.objects.create(product=product, **stock_data)
 
         for image_data in images_data:
-            Gallery.objects.create(products=product, **image_data)
+            Gallery.objects.create(product=product, **image_data)
 
         return product
