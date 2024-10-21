@@ -23,9 +23,7 @@ class StockSerializer(serializers.ModelSerializer):
         fields = ["id", 'size', 'quantity']
 
 
-
 class GallerySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Gallery
         fields = ["id", 'image']
@@ -50,9 +48,10 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     def get_first_image(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.images.exists():
-            image_url = obj.images.first().image.url
+            first_image = obj.images.first()
+            image_url = first_image.image.url
             return request.build_absolute_uri(image_url)
         return "https://img.freepik.com/premium-vector/photo-coming-soon-picture-frame-neon-sign_100456-4588.jpg"
 
@@ -61,6 +60,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     stocks = StockSerializer(many=True, read_only=False)
     images = GallerySerializer(many=True, read_only=False)
+
     class Meta:
         model = Product
         fields = [

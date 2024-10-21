@@ -19,6 +19,15 @@ class ProductView(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
 
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == "list":
+            queryset = queryset.prefetch_related(
+                "stocks", "stocks__size", "category", "images")
+        elif self.action == "retrieve":
+            queryset = queryset.prefetch_related("stocks__size")
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "list":
             return ProductListSerializer
@@ -28,6 +37,14 @@ class ProductView(viewsets.ReadOnlyModelViewSet):
 
 class StockView(viewsets.ReadOnlyModelViewSet):
     queryset = Stock.objects.all()
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == "list":
+            queryset = queryset.select_related("product").select_related("size")
+        elif self.action == "retrieve":
+            queryset = queryset.select_related("size")
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
