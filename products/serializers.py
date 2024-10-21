@@ -33,8 +33,8 @@ class GallerySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    stocks = StockSerializer(many=True)
-    images = GallerySerializer(many=True)
+    stocks = StockSerializer(many=True, write_only=True)
+    images = GallerySerializer(many=True, write_only=True)
 
     class Meta:
         model = Product
@@ -62,7 +62,7 @@ class ProductSerializer(serializers.ModelSerializer):
         images_data = validated_data.pop('images')
 
         logger.info("Validated Data: %s", validated_data)
-        logger.info("Sizes data: %s", sizes_data)
+        logger.info("Sizes data: %s", stocks_data)
         logger.info("Images data: %s", images_data)
 
         product = Product.objects.create(**validated_data)

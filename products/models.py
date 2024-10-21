@@ -150,3 +150,6 @@ class Gallery(models.Model):
         db_table = "gallery"
         verbose_name = "Зображення"
         verbose_name_plural = "Галерея товарів"
+
+    def __str__(self):
+        return f"{self.products.name} - {self.image}"
