@@ -1,17 +1,36 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
 
-from products.models import Category, Product
-from products.serializers import CategorySerializer, ProductSerializer
+from products.models import Category, Product, Stock
+from products.serializers import (
+    CategorySerializer,
+    ProductListSerializer,
+    ProductDetailSerializer,
+    StockListSerializer,
+    StockDetailSerializer
+)
 
 
-class CategoryView(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin):
+class CategoryView(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class ProductView(viewsets.ModelViewSet):
+class ProductView(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    serializer_class = ProductListSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ProductListSerializer
+        if self.action == "retrieve":
+            return ProductDetailSerializer
+
+
+class StockView(viewsets.ReadOnlyModelViewSet):
+    queryset = Stock.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return StockListSerializer
+        if self.action == "retrieve":
+            return StockDetailSerializer

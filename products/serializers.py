@@ -1,9 +1,6 @@
 from rest_framework import serializers
 
 from products.models import Category, Product, Stock, Gallery, Size
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -19,31 +16,57 @@ class SizeSerializer(serializers.ModelSerializer):
 
 
 class StockSerializer(serializers.ModelSerializer):
-    size = serializers.PrimaryKeyRelatedField(queryset=Size.objects.all())
+    size = serializers.SlugRelatedField(read_only=True, slug_field="size")
 
     class Meta:
         model = Stock
-        fields = ['size', 'quantity']
+        fields = ["id", 'size', 'quantity']
+
 
 
 class GallerySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Gallery
-        fields = ['image']
+        fields = ["id", 'image']
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    stocks = StockSerializer(many=True, write_only=True)
-    images = GallerySerializer(many=True, write_only=True)
+class ProductListSerializer(serializers.ModelSerializer):
+    stocks = StockSerializer(many=True)
+    first_image = serializers.SerializerMethodField()
+    category = serializers.SlugRelatedField(read_only=True, slug_field="name")
 
     class Meta:
         model = Product
         fields = [
-            "id",
+            "name",
+            "price",
+            "category",
+            "color",
+            "article",
+            "season",
+            "stocks",
+            "first_image",
+        ]
+
+    def get_first_image(self, obj):
+        request = self.context.get('request')
+        if obj.images.exists():
+            image_url = obj.images.first().image.url
+            return request.build_absolute_uri(image_url)
+        return "https://img.freepik.com/premium-vector/photo-coming-soon-picture-frame-neon-sign_100456-4588.jpg"
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    stocks = StockSerializer(many=True, read_only=False)
+    images = GallerySerializer(many=True, read_only=False)
+    class Meta:
+        model = Product
+        fields = [
             "name",
             "description",
             "price",
-            "category",
             "slug",
             "color",
             "article",
@@ -53,24 +76,29 @@ class ProductSerializer(serializers.ModelSerializer):
             "count",
             "created_at",
             "updated_at",
+            "category",
             "stocks",
             "images",
         ]
 
-    def create(self, validated_data):
-        stocks_data = validated_data.pop('stocks')
-        images_data = validated_data.pop('images')
 
-        logger.info("Validated Data: %s", validated_data)
-        logger.info("Sizes data: %s", stocks_data)
-        logger.info("Images data: %s", images_data)
+class StockListSerializer(serializers.ModelSerializer):
+    product = serializers.SlugRelatedField(read_only=True, slug_field="name")
+    article = serializers.SerializerMethodField()
+    size = serializers.SlugRelatedField(read_only=True, slug_field="size")
 
-        product = Product.objects.create(**validated_data)
+    class Meta:
+        model = Stock
+        fields = "__all__"
 
-        for stock_data in stocks_data:
-            Stock.objects.create(product=product, **stock_data)
+    def get_article(self, obj):
+        return obj.product.article
 
-        for image_data in images_data:
-            Gallery.objects.create(product=product, **image_data)
 
-        return product
+class StockDetailSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer()
+    size = SizeSerializer()
+
+    class Meta:
+        model = Stock
+        fields = ["id", "product", "size", "quantity"]

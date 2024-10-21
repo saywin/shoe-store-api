@@ -121,11 +121,12 @@ class Stock(models.Model):
     quantity = models.IntegerField(verbose_name="Кількість")
 
     def clean(self):
-        total_quantity_in_stock = sum(stock.quantity for stock in self.product.stocks.exclude(pk=self.pk))
+        if self.product.pk is not None:
+            total_quantity_in_stock = sum(stock.quantity for stock in self.product.stocks.exclude(pk=self.pk))
 
-        if total_quantity_in_stock + self.quantity > self.product.count:
-            raise ValidationError(
-                "Сумарна кількість товарів у складі не може перевищувати загальну кількість продукту.")
+            if total_quantity_in_stock + self.quantity > self.product.count:
+                raise ValidationError(
+                    "Сумарна кількість товарів у складі не може перевищувати загальну кількість продукту.")
 
     class Meta:
         db_table = "stock"
